@@ -10,27 +10,21 @@ Cinco subagentes de Claude Code para trabajar changes de OpenSpec en equipo, con
 | `security-auditor` | Audita cambios que tocan autenticación, tokens, permisos, errores o secretos. | Solo lectura |
 | `postgres-pro` | Revisa y diseña migraciones, constraints y consultas de PostgreSQL. | Escritura |
 
+## Flujo
+
+Cómo se conectan los agentes, qué pasa cuando un test falla y cuándo entra cada revisor está en [FLUJO.md](FLUJO.md).
+
 ## Instalación
 
-Para usarlos en todos tus proyectos, copia los archivos a tu carpeta de usuario:
+Los agentes se instalan en un proyecto, no en `~/.claude`: el hook del tester se resuelve con `$CLAUDE_PROJECT_DIR`, así que necesita estar en el proyecto. Desde PowerShell, dentro de la carpeta del repo:
 
-```bash
-mkdir -p ~/.claude/agents && cp agents/*.md ~/.claude/agents/
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Proyecto C:\ruta\al\proyecto
 ```
 
-Para usarlos solo en un proyecto, cópialos a `.claude/agents/` dentro del repo:
+Esto copia `agents/`, `hooks/` y `scripts/verificar-displaynames.js` a `.claude/` del proyecto. Claude Code los carga al iniciar una sesión nueva.
 
-```bash
-mkdir -p .claude/agents && cp agents/*.md .claude/agents/
-```
-
-El agente `tester` usa un hook que bloquea el acceso a `src/main` para escribir tests solo desde la spec. Copia también la carpeta `hooks/` al proyecto donde lo uses:
-
-```bash
-mkdir -p .claude/hooks && cp hooks/*.js .claude/hooks/
-```
-
-Claude Code los carga al iniciar una sesión nueva. Cada archivo tiene su frontmatter (`name`, `description`, `tools`) y las instrucciones del rol.
+Este repo es la fuente de los agentes. No edites a mano las copias de cada proyecto: cámbialas acá y vuelve a correr el instalador. Si un proyecto necesita una variante, guárdala en el proyecto y no en este repo. Cada archivo tiene su frontmatter (`name`, `description`, `tools`) y las instrucciones del rol.
 
 ## Requisitos
 

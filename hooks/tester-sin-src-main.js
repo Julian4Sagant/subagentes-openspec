@@ -5,6 +5,10 @@
 // Se activa si la llamada viene del tester (campo agent_type del input del hook) o si se lo
 // invoca con --siempre (desde el frontmatter del agente, donde solo corre mientras trabaja el
 // tester). Cualquier otra llamada pasa sin cambios.
+//
+// Es una barrera contra lecturas accidentales o por atajo, no un límite de seguridad: un symlink
+// o un comando que construya la ruta en partes puede esquivarla. La garantía fuerte es no tener
+// el código de producción en el worktree del tester.
 
 const fs = require('fs');
 const path = require('path');
@@ -22,8 +26,10 @@ function normalizar(ruta) {
 	return String(ruta || '').replace(/\\/g, '/').toLowerCase();
 }
 
+/** Nombra src/main, o una forma comodín que lo alcanza: src/*, src/ma*. */
 function tocaSrcMain(texto) {
-	return /(^|[\/\s'"=])src\/main(\/|$|[\s'"])/.test(normalizar(texto));
+	const t = normalizar(texto);
+	return /(^|[\/\s'"=])src\/main(\/|$|[\s'"])/.test(t) || /(^|[\/\s'"=])src\/(\*|ma)/.test(t);
 }
 
 /** Un directorio de búsqueda que contiene src/main (la raíz de un checkout, o src/) lo expone. */
@@ -52,7 +58,7 @@ function motivoDeBloqueo(entrada) {
 			}
 			return incluyeSrcMain(input.path, cwd) ? 'buscar en un directorio que contiene src/main' : null;
 		case 'Bash':
-			return tocaSrcMain(input.command) ? 'un comando que nombra src/main' : null;
+			return tocaSrcMain(input.command) ? 'ejecutar un comando que nombra src/main' : null;
 		default:
 			return null;
 	}

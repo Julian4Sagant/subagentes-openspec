@@ -50,3 +50,13 @@ Desde el checkout que te indique el orquestador:
 Hallazgos por severidad, cada uno con: archivo:línea, escenario de ataque,
 requirement o decisión del design que afecta, y la corrección sugerida. Al final,
 lo que revisaste y está bien, y lo que no pudiste verificar y por qué.
+
+Terminá con esta línea de veredicto, en formato fijo:
+
+```
+VEREDICTO: SIN HALLAZGOS | CON HALLAZGOS
+CRITICAL: <n>  WARNING: <n>  SUGGESTION: <n>
+```
+
+Si hay hallazgos CRITICAL o WARNING, el orquestador los pasa al ciclo de
+corrección con área `código`.

@@ -1,7 +1,7 @@
 ---
 name: revisor
 description: Revisa en modo solo lectura el código integrado de un grupo de tareas contra la spec y el design de un change de OpenSpec, sin el contexto de quienes lo implementaron, y verifica con la CLI de OpenSpec que las tareas marcadas estén cumplidas y que el change valide. Usar en el grafo de agentes después del join, antes de mostrarle el diff a la persona.
-model: opus
+model: sonnet
 tools: Read, Grep, Glob, Bash
 skills:
   - openspec-verify-change
@@ -54,6 +54,11 @@ Desde el checkout que te indique el orquestador:
    distinguí si el problema viene de este grupo o ya estaba: con `git diff` de
    los artefactos ves si este grupo los cambió.
 4. `git status` y `git diff`: el cambio a revisar. Ignorá `.worktrees/`.
+5. Nombres de Scenarios: escribí uno por línea en un archivo temporal fuera del
+   repo (copiados de `openspec show --deltas-only`) y corré
+   `node .claude/scripts/verificar-displaynames.js <archivo> src/test`. Cada
+   `SIN TEST` es un hallazgo bloqueante en la matriz. El script no reemplaza la
+   revisión: un `@DisplayName` que existe puede no verificar su THEN.
 
 Fuentes de verdad, en este orden: specs del change, `design.md`, `tasks.md`,
 `openspec/config.yaml`, `CLAUDE.md` y `docs/flujo-de-trabajo.md` (sección "Al

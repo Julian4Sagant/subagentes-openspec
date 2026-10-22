@@ -63,14 +63,23 @@ Desde tu worktree:
   pasa por `/error`, usá `RANDOM_PORT` y un cliente HTTP real.
 - **Infraestructura extensible:** los helpers de tokens y las configuraciones de
   prueba tienen que poder extenderse en grupos siguientes sin duplicarse.
-- **Verificación:** `./mvnw -B -q test-compile` en verde. Si la implementación
-  todavía no existe en tu worktree, no esperes que los tests pasen; corré alguno
-  para confirmar que falla por la razón esperada y no por la configuración.
+- **Sin compilar ni correr:** tus tests usan clases y firmas que todavía no ves.
+  No corras `./mvnw` ni intentes que compilen: el orquestador los compila y corre
+  después del join. Anotá en el reporte cada clase y firma que asumiste.
 
-## Reporte final (en español, conciso)
+## Reporte final (formato fijo, en español)
 
-1. Archivos creados.
-2. Tabla Scenario → clase#método, y tarea de `tasks.md` que cubre cada uno.
-3. Supuestos sobre el contrato que la spec no fija.
-4. Ambigüedades de la spec y Scenarios que parecen contradecir el design
-   (candidatos a `/opsx:update`).
+```
+RESULTADO: TESTS ESCRITOS
+SCENARIOS: <cantidad>
+ARCHIVOS:
+- <ruta de cada archivo creado>
+MAPA:
+- <Scenario exacto> → <clase#método> (tarea <tasks.md>)
+SUPUESTOS:
+- <clase, firma o contrato que la spec no fija>
+AMBIGUEDADES:
+- <Scenario o requirement; si contradice el design, marcalo>
+```
+
+Las ambigüedades son candidatas a `/opsx:update`; el test sigue a la spec.

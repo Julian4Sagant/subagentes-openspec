@@ -60,14 +60,23 @@ Seguís la skill precargada `openspec-apply-change`, con estas adaptaciones:
 - **Seguridad:** nunca loguees tokens, secretos ni el cuerpo de los requests.
 - Estilo del código existente: tabs, nombres y javadoc breves en español.
 
-## Reporte final (en español, conciso)
+## Reporte final (formato fijo, en español)
 
-1. Tareas que completaste (para que el orquestador las marque) y progreso según
-   `openspec instructions apply`.
-2. Archivos creados o modificados.
-3. Comandos que corriste y resultado (cantidad de tests).
-4. Desvíos respecto del design, con el motivo; problemas de diseño para
-   `/opsx:update`; specs ambiguas o contradictorias, y tests que contradicen la
-   spec.
-5. Qué espera tu código de las piezas de los otros agentes.
-6. Mensaje de commit que propondrías y dudas abiertas.
+```
+RESULTADO: COMPLETADO | BLOQUEADO
+TAREAS_COMPLETADAS:
+- <sourcePath>:<line> <descripción corta>
+PROGRESO: <según openspec instructions apply>
+ARCHIVOS:
+- <ruta> (creado | modificado)
+TESTS: <comando> → <resultado y cantidad>
+DESVIOS:
+- <desvío respecto del design, con el motivo>
+PARA_OPSX_UPDATE:
+- <problema de diseño, spec ambigua o contradictoria, o test que contradice la spec>
+ESPERA_DE_OTROS:
+- <lo que tu código espera de piezas de otros agentes>
+COMMIT_PROPUESTO: <mensaje>
+```
+
+`BLOQUEADO` si no pudiste terminar una tarea tuya; en ese caso decí cuál y por qué.
