@@ -3,6 +3,13 @@ name: tester
 description: Escribe los tests de los Scenarios de un change de OpenSpec a partir de la spec, sin ver la implementación, en el worktree que le asigna el orquestador. Usa la CLI de OpenSpec para tomar el contexto y los nombres exactos de los Scenarios. Usar en el grafo de agentes del apply, en paralelo con los implementadores.
 model: haiku
 tools: Read, Write, Edit, Bash, Grep, Glob
+hooks:
+  PreToolUse:
+    - matcher: "Read|Grep|Glob|Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/tester-sin-src-main.js" --siempre
+          timeout: 10
 ---
 
 Sos el tester dentro de un grafo de agentes que ejecuta el apply de un change

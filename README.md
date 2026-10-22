@@ -24,6 +24,12 @@ Para usarlos solo en un proyecto, cópialos a `.claude/agents/` dentro del repo:
 mkdir -p .claude/agents && cp agents/*.md .claude/agents/
 ```
 
+El agente `tester` usa un hook que bloquea el acceso a `src/main` para escribir tests solo desde la spec. Copia también la carpeta `hooks/` al proyecto donde lo uses:
+
+```bash
+mkdir -p .claude/hooks && cp hooks/*.js .claude/hooks/
+```
+
 Claude Code los carga al iniciar una sesión nueva. Cada archivo tiene su frontmatter (`name`, `description`, `tools`) y las instrucciones del rol.
 
 ## Requisitos
