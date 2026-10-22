@@ -1,38 +1,44 @@
 # Subagentes OpenSpec
 
-Cinco subagentes de Claude Code para trabajar changes de OpenSpec en equipo, con roles de implementación, tests, revisión, seguridad y base de datos.
+Cinco subagentes de Claude Code que se reparten el apply de un change de OpenSpec: uno implementa, otro escribe los tests desde la spec sin ver el código, otro revisa, y dos especialistas entran cuando hacen falta.
 
-| Subagente | Rol | Modo |
-|---|---|---|
-| `implementador` | Implementa las tareas de un change aprobado en su propio worktree, acotado a su área de código. | Escritura |
-| `tester` | Escribe los tests de los Scenarios a partir de la spec, sin ver la implementación. | Escritura |
-| `revisor` | Revisa el código integrado contra la spec y el design, y valida el change con la CLI de OpenSpec. | Solo lectura |
-| `security-auditor` | Audita cambios que tocan autenticación, tokens, permisos, errores o secretos. | Solo lectura |
-| `postgres-pro` | Revisa y diseña migraciones, constraints y consultas de PostgreSQL. | Escritura |
+La idea central: **los tests verifican el contrato, no la implementación.** Si el mismo agente escribe el código y los tests, tiende a ajustar los tests hasta que pasan. Separando los roles, un test puede fallar de verdad cuando el código se desvía de la spec. Más en [Por qué un grafo](docs/01-por-que-un-grafo.md).
 
-## Flujo
+| Subagente | Rol | Modelo | Modo |
+|---|---|---|---|
+| `implementador` | Implementa las tareas de su área en su propio worktree. | sonnet | Escritura |
+| `tester` | Escribe los tests de los Scenarios desde la spec, sin ver `src/main`. | haiku | Escritura en `src/test` |
+| `revisor` | Revisa lo integrado contra spec y design y da un veredicto. | sonnet | Solo lectura |
+| `security-auditor` | Audita cambios en autenticación, permisos, errores, logs o secretos. | opus | Solo lectura |
+| `postgres-pro` | Diseña y revisa migraciones, constraints y consultas de PostgreSQL. | haiku | Escritura |
 
-Cómo se conectan los agentes, qué pasa cuando un test falla y cuándo entra cada revisor está en [FLUJO.md](FLUJO.md).
+## Instalación rápida
 
-## Instalación
-
-Los agentes se instalan en un proyecto, no en `~/.claude`: el hook del tester se resuelve con `$CLAUDE_PROJECT_DIR`, así que necesita estar en el proyecto. Desde PowerShell, dentro de la carpeta del repo:
+Desde PowerShell, dentro de la carpeta de este repo:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Proyecto C:\ruta\al\proyecto
 ```
 
-Esto copia `agents/`, `hooks/` y `scripts/verificar-displaynames.js` a `.claude/` del proyecto. Claude Code los carga al iniciar una sesión nueva.
+Requisitos, verificación y variantes por proyecto en [Instalación](docs/03-instalacion.md).
 
-Este repo es la fuente de los agentes. No edites a mano las copias de cada proyecto: cámbialas acá y vuelve a correr el instalador. Si un proyecto necesita una variante, guárdala en el proyecto y no en este repo. Cada archivo tiene su frontmatter (`name`, `description`, `tools`) y las instrucciones del rol.
+## Documentación
 
-## Requisitos
+- [Índice y por dónde empezar](docs/README.md)
+- [Por qué un grafo de agentes y no uno solo](docs/01-por-que-un-grafo.md)
+- [Conceptos](docs/02-conceptos.md)
+- [Instalación](docs/03-instalacion.md)
+- [Agentes](docs/04-agentes.md)
+- [Uso](docs/05-uso.md)
+- [Casos de uso](docs/06-casos-de-uso.md)
 
-- Claude Code.
-- La CLI de [OpenSpec](https://github.com/Fission-AI/OpenSpec) para `tester` y `revisor`.
-- Los agentes asumen un flujo con changes de OpenSpec. Si tu proyecto usa otro stack, ajusta las secciones de proyecto dentro de cada archivo.
+## Contenido del repo
 
-## Notas
+```
+agents/    los cinco agentes (fuente de verdad)
+hooks/     hook del tester que bloquea src/main
+scripts/   instalador y verificador de @DisplayName
+docs/      documentación
+```
 
-- Los agentes de solo lectura (`revisor`, `security-auditor`) no modifican código.
-- Ninguno de los archivos contiene claves, tokens ni datos reales.
+Ninguno de los archivos contiene claves, tokens ni datos reales.
