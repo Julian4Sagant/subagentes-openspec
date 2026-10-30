@@ -5,6 +5,13 @@ model: sonnet
 tools: Read, Grep, Glob, Bash
 skills:
   - openspec-verify-change
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/sin-escritura.js" --solo-lectura
+          timeout: 10
 ---
 
 Sos el revisor independiente de un grafo de agentes que ejecuta el apply de un
@@ -28,7 +35,9 @@ el orquestador con la persona.
 
 Además de la spec y el design, revisás el código integrado con estos criterios.
 Son complementarios: si un hallazgo contradice la spec, va como bloqueante; si no,
-como importante o menor.
+como importante o menor. Las reglas propias del stack del proyecto (transacciones,
+formato de errores, convenciones) están en su `CLAUDE.md`; si contradicen estos
+criterios, gana el `CLAUDE.md`.
 
 - **Lógica:** condiciones invertidas o incompletas, casos borde (nulo, vacío, el
   límite y uno más), comparaciones de cadenas y fechas hechas mal, excepciones

@@ -22,9 +22,27 @@ El instalador copia:
 |---|---|
 | `agents/*.md` | `.claude/agents/` |
 | `hooks/tester-sin-src-main.js` | `.claude/hooks/` |
+| `hooks/sin-escritura.js` | `.claude/hooks/` |
 | `scripts/verificar-displaynames.js` | `.claude/scripts/` |
 
 Después, abrí una sesión nueva de Claude Code en el proyecto: los agentes se cargan al iniciar.
+
+### Guarda de escritura
+
+`sin-escritura.js` se declara en el frontmatter de tres agentes, así que solo corre mientras trabaja cada uno:
+
+- `implementador`: bloquea comandos de git que cambian el repo (`commit`, `push`, `reset`, `stash`, `checkout`...). Integrar y commitear es del orquestador.
+- `revisor` y `security-auditor`, con `--solo-lectura`: además bloquea borrar o escribir archivos con shell y redirecciones dentro del proyecto. Las redirecciones a `/dev/null` o a rutas fuera del proyecto siguen permitidas.
+
+Es una barrera contra escrituras accidentales, no un límite de seguridad. La garantía fuerte es que el agente no tenga `Write` ni `Edit`, que es lo que hacen el revisor y el security-auditor.
+
+### Requisitos de archivos del proyecto
+
+Los agentes leen archivos que el repo no trae. Tienen que existir en el proyecto:
+
+- `CLAUDE.md`: reglas del proyecto. El `postgres-pro` las usa como fuente de su stack y su acceso a datos.
+- `openspec/config.yaml`: el campo `context` con la arquitectura y el contrato.
+- `docs/flujo-de-trabajo.md`: el flujo completo de un change, con el paso 10 (apply) y la sección "Al cerrar cada grupo del apply", que el revisor consulta.
 
 ### Por qué en el proyecto y no en `~/.claude`
 
@@ -53,6 +71,22 @@ command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/tester-sin-src-main.js" --siemp
    ```
 
    Imprime cuántos Scenarios tienen test y lista los `SIN TEST`.
+4. Probá la guarda de escritura, desde la carpeta del proyecto:
+
+   ```bash
+   echo '{"tool_name":"Bash","tool_input":{"command":"git commit -m x"}}' | node .claude/hooks/sin-escritura.js
+   ```
+
+   Tiene que imprimir un JSON con `"permissionDecision":"deny"`. Con `--solo-lectura` también bloquea `rm`, `tee` o `echo x > archivo.txt` dentro del proyecto.
+
+5. Desde el repo de agentes, no desde el proyecto, corré las pruebas de los hooks y el validador del frontmatter:
+
+   ```bash
+   node --test scripts/test-hooks.js
+   node scripts/validar-agentes.js
+   ```
+
+   El validador sale con 1 si un agente de solo lectura tiene herramientas de escritura, si `name` no coincide con el archivo, si el modelo no existe o si un hook apunta a un archivo que no está en `hooks/`.
 
 ## Actualizar
 
@@ -60,10 +94,13 @@ Este repo es la fuente de los agentes. Para tomar una versión nueva, hacé `git
 
 ## Variantes por proyecto
 
-A veces un proyecto necesita que el agente sepa cosas propias: el stack, las clases base de los tests, las reglas de logs. Por ejemplo, un proyecto puede agregar al tester una sección "El proyecto" con su versión de Java, sus clases de prueba y el formato de errores.
+Los agentes de este repo son genéricos. Lo que depende de un proyecto (su stack, sus clases base de test, sus reglas de logs y de errores) no va en el archivo del agente: va en el `CLAUDE.md` del proyecto. Los agentes lo leen y, si contradice sus reglas genéricas, gana el `CLAUDE.md`. Así un proyecto no necesita una copia propia de cada agente.
 
-Si tenés una variante:
+- **Tester, revisor, security-auditor y postgres-pro** leen el `CLAUDE.md` del proyecto antes de empezar.
+- **Implementador** lee el `context` de `openspec/config.yaml`, que define la arquitectura y el contrato.
 
-- Guardala en el repo del proyecto, versionada ahí, no en este repo.
-- **No corras el instalador sobre ese proyecto**, o perdés la variante. Copiá solo lo que cambió (por ejemplo, el hook) y aplicá a mano los cambios de las instrucciones.
-- Cuando este repo cambie el comportamiento de un agente (un formato de reporte, una regla), llevá el mismo cambio a la variante.
+Si un proyecto ya tiene una copia propia de un agente con secciones "El proyecto":
+
+- Movélas al `CLAUDE.md` del proyecto, versionado ahí, y volvé a instalar el agente genérico.
+- **No corras el instalador sobre ese proyecto sin antes mover esas secciones**, o las perdés: el instalador pisa los archivos de `.claude/agents/`.
+- Si este repo cambia una regla genérica, revisá si el `CLAUDE.md` del proyecto la contradice.

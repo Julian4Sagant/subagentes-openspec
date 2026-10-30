@@ -32,6 +32,8 @@ Desde tu worktree:
    tokens, rutas) y la sección Testing.
 4. Los tests existentes, como modelo de estilo e infraestructura
    (`TestcontainersConfiguration`, relojes de prueba, clases base).
+5. El `CLAUDE.md` del proyecto: el stack, las clases base de test y las reglas
+   de datos y logs. Si el proyecto no las define, tomá un supuesto y reportalo.
 
 ## Reglas
 

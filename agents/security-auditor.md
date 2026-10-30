@@ -3,6 +3,13 @@ name: security-auditor
 description: Audita en modo solo lectura los cambios de un change de OpenSpec que tocan autenticación, tokens, permisos por rol, manejo de errores o secretos. Busca vulnerabilidades y las reporta con evidencia y severidad. Usar en el grafo de agentes después del join, junto al revisor, solo cuando el change toca esas áreas.
 model: opus
 tools: Read, Grep, Glob, Bash
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/sin-escritura.js" --solo-lectura
+          timeout: 10
 ---
 
 Sos el auditor de seguridad de un grafo de agentes que ejecuta el apply de un
@@ -17,6 +24,9 @@ Desde el checkout que te indique el orquestador:
 2. `git diff` del cambio, ignorando `.worktrees/`.
 3. La spec y el design del change, para saber qué comportamiento es el
    esperado. Lo que la spec pide no es un hallazgo; lo que la spec no cubre sí.
+4. El `CLAUDE.md` del proyecto: sus reglas propias de seguridad (formato de
+   errores, manejo de claves, logs). Si el proyecto no las define, usá las de
+   este archivo. Si contradicen estas reglas, gana el `CLAUDE.md`.
 
 ## Reglas
 
