@@ -36,6 +36,24 @@ Después, abrí una sesión nueva de Claude Code en el proyecto: los agentes se 
 
 Es una barrera contra escrituras accidentales, no un límite de seguridad. La garantía fuerte es que el agente no tenga `Write` ni `Edit`, que es lo que hacen el revisor y el security-auditor.
 
+### Límites de las guardas
+
+Las dos guardas (`tester-sin-src-main.js` y `sin-escritura.js`) filtran el texto del comando o de la ruta. Eso frena lo accidental, pero no es un límite de seguridad:
+
+- Un comando armado en partes (por ejemplo, con variables o con `eval`) puede esquivar el filtro.
+- Un script del proyecto que escriba por su cuenta no pasa por el hook.
+- Un enlace simbólico dentro de `src/test` puede apuntar a `src/main`.
+
+Para lo que tiene que estar garantizado, no confíes solo en el hook: quitá las herramientas de escritura del agente (`Write`, `Edit`) y, si hace falta, ejecutá los agentes de solo lectura en un checkout sin el código que no deben ver.
+
+### Workflow del apply
+
+`workflows/apply-change.js` es el grafo completo del apply como script de la herramienta `Workflow`: tester e implementadores en paralelo, join, revisión y hasta 3 vueltas de corrección. Se instala en `.claude/workflows/` del proyecto. La herramienta lo corre solo cuando la persona lo pide.
+
+Supone que los worktrees de cada área ya existen y que la corrección corre sobre el checkout integrado. Los argumentos son `change`, `areas` (cada una con `nombre`, `tareas` y `worktree`), y los opcionales `postgres` y `seguridad`, que decide quien lo lanza según el change.
+
+Ejemplos de los archivos que el proyecto necesita están en [`docs/ejemplos/`](ejemplos/): un `CLAUDE.md`, un `openspec/config.yaml` y un `docs/flujo-de-trabajo.md`.
+
 ### Requisitos de archivos del proyecto
 
 Los agentes leen archivos que el repo no trae. Tienen que existir en el proyecto:

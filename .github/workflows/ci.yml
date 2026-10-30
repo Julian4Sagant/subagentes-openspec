@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  agentes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validar frontmatter de los agentes
+        run: node scripts/validar-agentes.js
+
+      - name: Probar los hooks
+        run: node --test scripts/test-hooks.js
+
+      - name: Revisar sintaxis del workflow
+        run: |
+          node -e '
+            const fs = require("fs");
+            let src = fs.readFileSync("workflows/apply-change.js", "utf8");
+            src = src.replace(/export const meta = \{[\s\S]*?\n\}\n/, "const meta = {};\n");
+            new Function("agent", "parallel", "phase", "args", "return (async () => {" + src + "})();");
+            console.log("workflows/apply-change.js: sintaxis OK");
+          '

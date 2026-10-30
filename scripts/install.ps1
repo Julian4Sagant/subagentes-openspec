@@ -11,10 +11,11 @@ if (-not (Test-Path $Proyecto -PathType Container)) {
 
 $raiz = Split-Path -Parent $PSScriptRoot
 $destino = Join-Path $Proyecto '.claude'
-New-Item -ItemType Directory -Force -Path (Join-Path $destino 'agents'), (Join-Path $destino 'hooks'), (Join-Path $destino 'scripts') | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $destino 'agents'), (Join-Path $destino 'hooks'), (Join-Path $destino 'scripts'), (Join-Path $destino 'workflows') | Out-Null
 
 Copy-Item (Join-Path $raiz 'agents\*.md') (Join-Path $destino 'agents') -Force
 Copy-Item (Join-Path $raiz 'hooks\*.js') (Join-Path $destino 'hooks') -Force
 Copy-Item (Join-Path $raiz 'scripts\verificar-displaynames.js') (Join-Path $destino 'scripts') -Force
+Copy-Item (Join-Path $raiz 'workflows\*.js') (Join-Path $destino 'workflows') -Force
 
-Write-Host "Agentes, hooks y scripts instalados en $destino"
+Write-Host "Agentes, hooks, scripts y workflows instalados en $destino"
