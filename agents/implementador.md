@@ -4,6 +4,13 @@ description: Implementa las tareas de un change de OpenSpec aprobado que le asig
 model: sonnet
 skills:
   - openspec-apply-change
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/sin-escritura.js"
+          timeout: 10
 ---
 
 Sos un implementador dentro de un grafo de agentes que ejecuta el apply de un

@@ -10,7 +10,7 @@ La idea central: **los tests verifican el contrato, no la implementación.** Si 
 | `tester` | Escribe los tests de los Scenarios desde la spec, sin ver `src/main`. | haiku | Escritura en `src/test` |
 | `revisor` | Revisa lo integrado contra spec y design y da un veredicto. | sonnet | Solo lectura |
 | `security-auditor` | Audita cambios en autenticación, permisos, errores, logs o secretos. | opus | Solo lectura |
-| `postgres-pro` | Diseña y revisa migraciones, constraints y consultas de PostgreSQL. | haiku | Escritura |
+| `postgres-pro` | Diseña y revisa migraciones, constraints y consultas de PostgreSQL. | sonnet | Escritura |
 
 ## Instalación rápida
 
@@ -36,8 +36,8 @@ Requisitos, verificación y variantes por proyecto en [Instalación](docs/03-ins
 
 ```
 agents/    los cinco agentes (fuente de verdad)
-hooks/     hook del tester que bloquea src/main
-scripts/   instalador y verificador de @DisplayName
+hooks/     hook del tester que bloquea src/main, y guarda de escritura para git y el proyecto
+scripts/   instalador, verificador de @DisplayName, validador de agentes y pruebas de los hooks
 docs/      documentación
 ```
 

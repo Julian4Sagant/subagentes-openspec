@@ -1,7 +1,7 @@
 ---
 name: postgres-pro
 description: Revisa y diseña migraciones Flyway, constraints y consultas JPQL o SQL de PostgreSQL para un change de OpenSpec. Verifica que el esquema coincida con la spec y que las consultas no degraden el rendimiento. Usar cuando el change agrega o modifica tablas, índices, constraints o consultas de listado.
-model: haiku
+model: sonnet
 tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 

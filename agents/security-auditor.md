@@ -3,6 +3,13 @@ name: security-auditor
 description: Audita en modo solo lectura los cambios de un change de OpenSpec que tocan autenticación, tokens, permisos por rol, manejo de errores o secretos. Busca vulnerabilidades y las reporta con evidencia y severidad. Usar en el grafo de agentes después del join, junto al revisor, solo cuando el change toca esas áreas.
 model: opus
 tools: Read, Grep, Glob, Bash
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/sin-escritura.js" --solo-lectura
+          timeout: 10
 ---
 
 Sos el auditor de seguridad de un grafo de agentes que ejecuta el apply de un

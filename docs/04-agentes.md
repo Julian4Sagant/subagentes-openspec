@@ -8,7 +8,7 @@ Cada ficha resume el archivo de [`agents/`](../agents). Si algo de acá no coinc
 | [tester](#tester) | haiku | Sí, solo `src/test` | Siempre, en paralelo con los implementadores |
 | [revisor](#revisor) | sonnet | No | Siempre, después del join |
 | [security-auditor](#security-auditor) | opus | No | Si el grupo toca autenticación, permisos, errores, logs o secretos |
-| [postgres-pro](#postgres-pro) | haiku | Sí, migraciones y acceso a datos | Si el grupo toca tablas, índices, constraints o consultas |
+| [postgres-pro](#postgres-pro) | sonnet | Sí, migraciones y acceso a datos | Si el grupo toca tablas, índices, constraints o consultas |
 
 ---
 
@@ -16,7 +16,7 @@ Cada ficha resume el archivo de [`agents/`](../agents). Si algo de acá no coinc
 
 **Rol:** implementa las tareas de `tasks.md` que le asigna el orquestador, en su propio worktree y dentro de un área de código.
 
-- **Modelo y herramientas:** `sonnet`, todas las herramientas. Precarga la skill `openspec-apply-change`.
+- **Modelo y herramientas:** `sonnet`, todas las herramientas. Precarga la skill `openspec-apply-change`. Tiene la guarda que le bloquea los comandos de git que cambian el repo (`sin-escritura.js`).
 - **Recibe:** el change-id, el worktree, las tareas (con su `sourcePath` y `line`) y el área de código.
 - **Hace:** sigue la skill de apply acotada a sus tareas, escribe los tests unitarios que pida su tarea y corre la suite en su worktree.
 - **No hace:** marcar checkboxes, commitear, editar artefactos de OpenSpec, tocar otras áreas, ni usar `@DisplayName` con nombres de Scenario (eso es del tester). Si un test contradice la spec, no acomoda el código al test: lo reporta.
@@ -74,7 +74,7 @@ AMBIGUEDADES:
 
 **Rol:** revisor independiente. Revisa el código integrado contra la spec y el design, sin conocer el razonamiento de quienes lo implementaron.
 
-- **Modelo y herramientas:** `sonnet`; `Read`, `Grep`, `Glob`, `Bash`. Precarga la skill `openspec-verify-change`. Solo lectura.
+- **Modelo y herramientas:** `sonnet`; `Read`, `Grep`, `Glob`, `Bash`. Precarga la skill `openspec-verify-change`. Solo lectura, con la guarda `sin-escritura.js --solo-lectura`: no puede escribir archivos en el proyecto ni hacer git que cambie el repo.
 - **Recibe:** el change-id, el checkout integrado y el número de grupo.
 - **Hace:** corre `openspec validate --strict`, lee el diff, corre `verificar-displaynames.js`, arma la matriz **Scenario → test → código**, y revisa lógica, errores, rendimiento, duplicación y fugas en logs.
 - **No hace:** editar archivos ni hacer operaciones de git que escriben. Puede correr tests.
@@ -100,7 +100,7 @@ El área entre corchetes (`código`, `tests`, `artefactos`) dice a quién vuelve
 
 **Rol:** audita los cambios que tocan seguridad. No corrige: reporta con evidencia.
 
-- **Modelo y herramientas:** `opus`; `Read`, `Grep`, `Glob`, `Bash`. Solo lectura.
+- **Modelo y herramientas:** `opus`; `Read`, `Grep`, `Glob`, `Bash`. Solo lectura, con la misma guarda que el revisor (`sin-escritura.js --solo-lectura`).
 - **Cuándo:** solo si el grupo toca autenticación, tokens o claves, permisos por rol, manejo de errores, logs o secretos.
 - **Busca:** tokens mal validados, endpoints sin regla de rol, objetos accesibles sin chequear el dueño, entradas sin validar, stack traces o SQL en respuestas, secretos o cuerpos de requests en logs, CORS o Actuator expuestos.
 - **Severidad:** CRITICAL (acceso sin autorización, fuga de secretos o datos personales), WARNING (requiere condiciones o debilita una defensa), SUGGESTION (endurecimiento sin riesgo concreto). Sin evidencia, es una sugerencia.
@@ -118,7 +118,7 @@ CRITICAL: 0  WARNING: 1  SUGGESTION: 2
 
 **Rol:** diseña y revisa migraciones, constraints y consultas de PostgreSQL para que el esquema coincida con la spec y las consultas usen índices.
 
-- **Modelo y herramientas:** `haiku`; `Read`, `Grep`, `Glob`, `Bash`, `Write`, `Edit`.
+- **Modelo y herramientas:** `sonnet`; `Read`, `Grep`, `Glob`, `Bash`, `Write`, `Edit`. El diseño de migraciones y constraints es la parte más delicada del grafo, por eso no va en Haiku.
 - **Cuándo:** si el grupo agrega o modifica tablas, índices, constraints o consultas.
 - **Reglas:** nunca edita una migración que ya está en `main`; cada cambio es una migración nueva. Las reglas de la spec que se pueden expresar en la base (unicidad, `CHECK`, FK, `NOT NULL`) van en la base. Todo listado lleva orden estable y paginación. Tests contra PostgreSQL real con Testcontainers, nunca H2. Sigue las reglas de acceso a datos de `CLAUDE.md` del proyecto.
 

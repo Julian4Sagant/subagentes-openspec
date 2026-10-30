@@ -5,6 +5,13 @@ model: sonnet
 tools: Read, Grep, Glob, Bash
 skills:
   - openspec-verify-change
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/sin-escritura.js" --solo-lectura
+          timeout: 10
 ---
 
 Sos el revisor independiente de un grafo de agentes que ejecuta el apply de un
