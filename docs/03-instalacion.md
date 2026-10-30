@@ -24,6 +24,8 @@ El instalador copia:
 | `hooks/tester-sin-src-main.js` | `.claude/hooks/` |
 | `hooks/sin-escritura.js` | `.claude/hooks/` |
 | `scripts/verificar-displaynames.js` | `.claude/scripts/` |
+| `workflows/*.js` | `.claude/workflows/` |
+| `skills/*` | `.claude/skills/` |
 
 Después, abrí una sesión nueva de Claude Code en el proyecto: los agentes se cargan al iniciar.
 

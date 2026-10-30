@@ -38,6 +38,7 @@ Requisitos, verificación y variantes por proyecto en [Instalación](docs/03-ins
 agents/     los cinco agentes (fuente de verdad)
 hooks/      hook del tester que bloquea src/main, y guarda de escritura para git y el proyecto
 workflows/  el grafo del apply como script de la herramienta Workflow
+skills/     skills que precargan los agentes, como el checklist OWASP del security-auditor
 scripts/    instalador, verificador de @DisplayName, validador de agentes y pruebas de los hooks
 docs/       documentación, y ejemplos de los archivos del proyecto en docs/ejemplos/
 .github/    CI: valida los agentes, prueba los hooks y revisa la sintaxis del workflow

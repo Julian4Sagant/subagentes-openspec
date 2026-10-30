@@ -10,6 +10,7 @@ const path = require('path');
 const raiz = path.resolve(__dirname, '..');
 const carpetaAgentes = path.join(raiz, 'agents');
 const carpetaHooks = path.join(raiz, 'hooks');
+const carpetaSkills = path.join(raiz, 'skills');
 
 const MODELOS = ['haiku', 'sonnet', 'opus'];
 const SOLO_LECTURA = ['revisor', 'security-auditor'];
@@ -17,7 +18,7 @@ const ESCRITURA = ['Write', 'Edit', 'NotebookEdit'];
 
 /** Separa el frontmatter (entre dos líneas `---`) del cuerpo. Devuelve null si no hay frontmatter. */
 function leerFrontmatter(texto) {
-	const partes = texto.split(/^---\s*$/m);
+	const partes = texto.replace(/\r\n/g, '\n').split(/^---\s*$/m);
 	if (partes.length < 3 || partes[0].trim() !== '') {
 		return null;
 	}
@@ -34,6 +35,15 @@ function campo(fm, nombre) {
 function herramientas(fm) {
 	const valor = campo(fm, 'tools');
 	return valor ? valor.split(',').map(h => h.trim()).filter(Boolean) : null;
+}
+
+/** Lista las skills precargadas en `skills:` (una por línea con guion). */
+function skillsDeAgente(fm) {
+	const bloque = /^skills:[ \t]*\n((?:[ \t]+-[ \t]+.+\n?)+)/m.exec(fm);
+	if (!bloque) {
+		return [];
+	}
+	return bloque[1].split('\n').map(l => l.replace(/^[ \t]+-[ \t]+/, '').trim()).filter(Boolean);
 }
 
 /** Devuelve las rutas de `command:` de los hooks, por ejemplo `.claude/hooks/x.js`. */
@@ -90,6 +100,22 @@ function validar() {
 			const archivoHook = path.join(carpetaHooks, path.basename(ruta));
 			if (!fs.existsSync(archivoHook)) {
 				problemas.push(`${rel}: el hook ${ruta} no existe en hooks/`);
+			}
+		}
+
+		for (const skill of skillsDeAgente(fm)) {
+			// Las skills openspec-* las instala la CLI de OpenSpec, no este repo.
+			if (skill.startsWith('openspec-')) {
+				continue;
+			}
+			const archivoSkill = path.join(carpetaSkills, skill, 'SKILL.md');
+			if (!fs.existsSync(archivoSkill)) {
+				problemas.push(`${rel}: la skill ${skill} no existe en skills/${skill}/SKILL.md`);
+				continue;
+			}
+			const nombreSkill = campo(leerFrontmatter(fs.readFileSync(archivoSkill, 'utf8')) ?? '', 'name');
+			if (nombreSkill !== skill) {
+				problemas.push(`skills/${skill}/SKILL.md: name "${nombreSkill}" no coincide con la carpeta "${skill}"`);
 			}
 		}
 	}

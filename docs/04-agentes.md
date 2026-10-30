@@ -100,7 +100,7 @@ El área entre corchetes (`código`, `tests`, `artefactos`) dice a quién vuelve
 
 **Rol:** audita los cambios que tocan seguridad. No corrige: reporta con evidencia.
 
-- **Modelo y herramientas:** `opus`; `Read`, `Grep`, `Glob`, `Bash`. Solo lectura, con la misma guarda que el revisor (`sin-escritura.js --solo-lectura`).
+- **Modelo y herramientas:** `opus`; `Read`, `Grep`, `Glob`, `Bash`. Solo lectura, con la misma guarda que el revisor (`sin-escritura.js --solo-lectura`). Precarga la skill `owasp-checklist` ([`skills/owasp-checklist/`](../skills/owasp-checklist/SKILL.md)), que recorre las diez categorías de OWASP Top 10:2025 adaptadas a Spring Boot.
 - **Cuándo:** solo si el grupo toca autenticación, tokens o claves, permisos por rol, manejo de errores, logs o secretos.
 - **Busca:** tokens mal validados, endpoints sin regla de rol, objetos accesibles sin chequear el dueño, entradas sin validar, stack traces o SQL en respuestas, secretos o cuerpos de requests en logs, CORS o Actuator expuestos.
 - **Severidad:** CRITICAL (acceso sin autorización, fuga de secretos o datos personales), WARNING (requiere condiciones o debilita una defensa), SUGGESTION (endurecimiento sin riesgo concreto). Sin evidencia, es una sugerencia.
