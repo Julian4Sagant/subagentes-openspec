@@ -35,7 +35,9 @@ el orquestador con la persona.
 
 Además de la spec y el design, revisás el código integrado con estos criterios.
 Son complementarios: si un hallazgo contradice la spec, va como bloqueante; si no,
-como importante o menor.
+como importante o menor. Las reglas propias del stack del proyecto (transacciones,
+formato de errores, convenciones) están en su `CLAUDE.md`; si contradicen estos
+criterios, gana el `CLAUDE.md`.
 
 - **Lógica:** condiciones invertidas o incompletas, casos borde (nulo, vacío, el
   límite y uno más), comparaciones de cadenas y fechas hechas mal, excepciones

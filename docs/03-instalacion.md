@@ -94,10 +94,13 @@ Este repo es la fuente de los agentes. Para tomar una versión nueva, hacé `git
 
 ## Variantes por proyecto
 
-A veces un proyecto necesita que el agente sepa cosas propias: el stack, las clases base de los tests, las reglas de logs. Por ejemplo, un proyecto puede agregar al tester una sección "El proyecto" con su versión de Java, sus clases de prueba y el formato de errores.
+Los agentes de este repo son genéricos. Lo que depende de un proyecto (su stack, sus clases base de test, sus reglas de logs y de errores) no va en el archivo del agente: va en el `CLAUDE.md` del proyecto. Los agentes lo leen y, si contradice sus reglas genéricas, gana el `CLAUDE.md`. Así un proyecto no necesita una copia propia de cada agente.
 
-Si tenés una variante:
+- **Tester, revisor, security-auditor y postgres-pro** leen el `CLAUDE.md` del proyecto antes de empezar.
+- **Implementador** lee el `context` de `openspec/config.yaml`, que define la arquitectura y el contrato.
 
-- Guardala en el repo del proyecto, versionada ahí, no en este repo.
-- **No corras el instalador sobre ese proyecto**, o perdés la variante. Copiá solo lo que cambió (por ejemplo, el hook) y aplicá a mano los cambios de las instrucciones.
-- Cuando este repo cambie el comportamiento de un agente (un formato de reporte, una regla), llevá el mismo cambio a la variante.
+Si un proyecto ya tiene una copia propia de un agente con secciones "El proyecto":
+
+- Movélas al `CLAUDE.md` del proyecto, versionado ahí, y volvé a instalar el agente genérico.
+- **No corras el instalador sobre ese proyecto sin antes mover esas secciones**, o las perdés: el instalador pisa los archivos de `.claude/agents/`.
+- Si este repo cambia una regla genérica, revisá si el `CLAUDE.md` del proyecto la contradice.
