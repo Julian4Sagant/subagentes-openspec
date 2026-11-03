@@ -10,6 +10,11 @@ hooks:
         - type: command
           command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/tester-sin-src-main.js" --siempre
           timeout: 10
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/sin-escritura.js"
+          timeout: 10
 ---
 
 Sos el tester dentro de un grafo de agentes que ejecuta el apply de un change

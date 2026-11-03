@@ -31,10 +31,12 @@ Después, abrí una sesión nueva de Claude Code en el proyecto: los agentes se 
 
 ### Guarda de escritura
 
-`sin-escritura.js` se declara en el frontmatter de tres agentes, así que solo corre mientras trabaja cada uno:
+`sin-escritura.js` se declara en el frontmatter de los cinco agentes, así que solo corre mientras trabaja cada uno:
 
-- `implementador`: bloquea comandos de git que cambian el repo (`commit`, `push`, `reset`, `stash`, `checkout`...). Integrar y commitear es del orquestador.
-- `revisor` y `security-auditor`, con `--solo-lectura`: además bloquea borrar o escribir archivos con shell y redirecciones dentro del proyecto. Las redirecciones a `/dev/null` o a rutas fuera del proyecto siguen permitidas.
+- `implementador`, `tester` y `postgres-pro`: bloquea los comandos de git que cambian el repo (`commit`, `push`, `reset`, `stash`, `checkout`...). Escriben código y tests con las herramientas `Write` y `Edit`, que el hook no toca; integrar y commitear es del orquestador.
+- `revisor` y `security-auditor`, con `--solo-lectura`: además bloquea borrar o escribir archivos con shell y redirecciones dentro del proyecto. Las redirecciones a `/dev/null` o a rutas fuera del proyecto siguen permitidas, porque el revisor necesita archivos temporales fuera del repo.
+
+`validar-agentes.js` falla si un agente se queda sin la guarda, o si uno de solo lectura la lleva sin `--solo-lectura`.
 
 Es una barrera contra escrituras accidentales, no un límite de seguridad. La garantía fuerte es que el agente no tenga `Write` ni `Edit`, que es lo que hacen el revisor y el security-auditor.
 
@@ -99,14 +101,15 @@ command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/tester-sin-src-main.js" --siemp
 
    Tiene que imprimir un JSON con `"permissionDecision":"deny"`. Con `--solo-lectura` también bloquea `rm`, `tee` o `echo x > archivo.txt` dentro del proyecto.
 
-5. Desde el repo de agentes, no desde el proyecto, corré las pruebas de los hooks y el validador del frontmatter:
+5. Desde el repo de agentes, no desde el proyecto, corré las pruebas de los hooks y los dos validadores:
 
    ```bash
    node --test scripts/test-hooks.js
    node scripts/validar-agentes.js
+   node scripts/validar-workflows.js
    ```
 
-   El validador sale con 1 si un agente de solo lectura tiene herramientas de escritura, si `name` no coincide con el archivo, si el modelo no existe o si un hook apunta a un archivo que no está en `hooks/`.
+   `validar-agentes.js` sale con 1 si un agente se queda sin la guarda `sin-escritura.js`, si uno de solo lectura la lleva sin `--solo-lectura` o tiene herramientas de escritura, si `name` no coincide con el archivo, si el modelo no existe, o si un hook o una skill apuntan a algo que no está en el repo. `validar-workflows.js` sale con 1 si un workflow no parsea o no declara su `meta`. Los tres corren también en CI, en cada PR.
 
 ## Actualizar
 

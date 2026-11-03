@@ -47,7 +47,7 @@ COMMIT_PROPUESTO: feat(solicitudes): validar monto en el servicio
 
 **Rol:** escribe los tests de los Scenarios **a partir de la spec, sin ver la implementación**, para que puedan fallar si el código se desvía del contrato.
 
-- **Modelo y herramientas:** `haiku`; `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`. Tiene el hook que le bloquea `src/main`.
+- **Modelo y herramientas:** `haiku`; `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`. Tiene el hook que le bloquea `src/main` y la guarda que le bloquea los comandos de git que cambian el repo.
 - **Recibe:** el change-id, el worktree y los Scenarios que le tocan.
 - **Lee:** `openspec show --deltas-only` para los nombres exactos de los Scenarios, del `design.md` solo el contrato observable (rutas, forma de los JSON, errores), y los tests existentes como modelo de estilo.
 - **Hace:** un test por Scenario con `@DisplayName` igual al nombre del Scenario, letra por letra. Agrupa por requirement y prueba los bordes de cada umbral.
@@ -118,7 +118,7 @@ CRITICAL: 0  WARNING: 1  SUGGESTION: 2
 
 **Rol:** diseña y revisa migraciones, constraints y consultas de PostgreSQL para que el esquema coincida con la spec y las consultas usen índices.
 
-- **Modelo y herramientas:** `sonnet`; `Read`, `Grep`, `Glob`, `Bash`, `Write`, `Edit`. El diseño de migraciones y constraints es la parte más delicada del grafo, por eso no va en Haiku.
+- **Modelo y herramientas:** `sonnet`; `Read`, `Grep`, `Glob`, `Bash`, `Write`, `Edit`, con la guarda que le bloquea los comandos de git que cambian el repo. El diseño de migraciones y constraints es la parte más delicada del grafo, por eso no va en Haiku.
 - **Cuándo:** si el grupo agrega o modifica tablas, índices, constraints o consultas.
 - **Reglas:** nunca edita una migración que ya está en `main`; cada cambio es una migración nueva. Las reglas de la spec que se pueden expresar en la base (unicidad, `CHECK`, FK, `NOT NULL`) van en la base. Todo listado lleva orden estable y paginación. Tests contra PostgreSQL real con Testcontainers, nunca H2. Sigue las reglas de acceso a datos de `CLAUDE.md` del proyecto.
 
