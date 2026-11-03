@@ -78,6 +78,14 @@ command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/tester-sin-src-main.js" --siemp
 
 ## Comprobar que quedó bien
 
+0. Lo más rápido: desde el repo de agentes, corré el verificador de contrato contra el proyecto. Sale con 0 si cumple todo y lista lo que falta o se desvió de `agents/`:
+
+   ```bash
+   node scripts/verificar-proyecto.js C:/ruta/al/proyecto
+   ```
+
+   Qué se comprueba y por qué, en [Patrones](07-patrones.md#2-el-contrato-de-un-proyecto).
+
 1. En Claude Code, `/agents` tiene que listar `implementador`, `tester`, `revisor`, `security-auditor` y `postgres-pro`.
 2. Probá el hook a mano, desde la carpeta del proyecto:
 
