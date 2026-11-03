@@ -92,8 +92,11 @@ function validar() {
 				problemas.push(`${rel}: agente de solo lectura con herramientas de escritura: ${escritura.join(', ')}`);
 			}
 		}
-		if (SOLO_LECTURA.includes(base) && !fm.includes('sin-escritura.js')) {
-			problemas.push(`${rel}: agente de solo lectura sin la guarda sin-escritura.js`);
+		if (!fm.includes('sin-escritura.js')) {
+			problemas.push(`${rel}: sin la guarda sin-escritura.js; ningún agente commitea, eso es del orquestador`);
+		}
+		else if (SOLO_LECTURA.includes(base) && !fm.includes('sin-escritura.js" --solo-lectura')) {
+			problemas.push(`${rel}: agente de solo lectura con la guarda sin --solo-lectura`);
 		}
 
 		for (const ruta of rutasDeHooks(fm)) {

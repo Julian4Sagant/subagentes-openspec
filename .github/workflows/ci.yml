@@ -21,12 +21,5 @@ jobs:
       - name: Probar los hooks
         run: node --test scripts/test-hooks.js
 
-      - name: Revisar sintaxis del workflow
-        run: |
-          node -e '
-            const fs = require("fs");
-            let src = fs.readFileSync("workflows/apply-change.js", "utf8");
-            src = src.replace(/export const meta = \{[\s\S]*?\n\}\n/, "const meta = {};\n");
-            new Function("agent", "parallel", "phase", "args", "return (async () => {" + src + "})();");
-            console.log("workflows/apply-change.js: sintaxis OK");
-          '
+      - name: Revisar los workflows
+        run: node scripts/validar-workflows.js
