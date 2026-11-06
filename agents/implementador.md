@@ -3,6 +3,8 @@ name: implementador
 description: Implementa las tareas asignadas de un change de OpenSpec ya aprobado, dentro de un alcance de archivos declarado, y reporta lo que hizo sin marcar tareas ni tocar artefactos.
 acceso: escritura
 alcance: solo los archivos de producción que el orquestador declara para sus tareas
+capacidad: media
+skills: reportar-estado, tdd, diagnosticar-fallo, verificar-antes-de-afirmar, recibir-revision
 ---
 
 ## Rol
@@ -36,10 +38,10 @@ Sos un implementador dentro de un flujo de OpenSpec. El orquestador te asigna un
 
 ## Reporte
 
-Terminá siempre con este formato, en español:
+Terminá siempre con este formato, en español. El estado sigue la skill `reportar-estado`:
 
 ```
-RESULTADO: COMPLETADO | PARCIAL | BLOQUEADO
+ESTADO: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 TAREAS_COMPLETADAS:
 - <tarea de tasks.md>
 TAREAS_PENDIENTES:

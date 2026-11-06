@@ -3,6 +3,8 @@ name: tester
 description: Escribe los tests de los Scenarios de un change de OpenSpec a partir de la spec, sin leer la implementación, para que los tests puedan fallar si el código se aparta del contrato.
 acceso: escritura
 alcance: solo los archivos de tests del proyecto (por ejemplo, la carpeta de tests)
+capacidad: media
+skills: reportar-estado, tdd, verificar-antes-de-afirmar
 ---
 
 ## Rol
@@ -39,7 +41,7 @@ Sos el tester dentro de un flujo de OpenSpec. Escribís tests de los Scenarios a
 Terminá siempre con este formato, en español:
 
 ```
-RESULTADO: TESTS_ESCRITOS | BLOQUEADO
+ESTADO: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 SCENARIOS: <cantidad>
 ARCHIVOS:
 - <ruta de cada archivo creado o modificado>
