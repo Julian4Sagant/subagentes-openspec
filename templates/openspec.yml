@@ -1,0 +1,25 @@
+# Plantilla instalada por scripts/instalar.js --hosts ci.
+# Valida los changes y specs de OpenSpec en cada pull request.
+name: OpenSpec
+
+on:
+  pull_request:
+
+jobs:
+  openspec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Versión fijada para que un cambio de OpenSpec no rompa el CI sin aviso.
+      - name: Instalar OpenSpec
+        run: npm install -g @fission-ai/openspec@1.16.0
+
+      - name: Validar changes y specs
+        run: openspec validate --all --strict
+
+      # Si el proyecto tiene pruebas, agregá aquí el paso (por ejemplo, npm test).

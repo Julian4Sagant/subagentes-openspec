@@ -52,6 +52,11 @@ docs/       diseño, hosts, uso y fuentes
 
 Probado con Node 22 (el de CI). No hay dependencias npm.
 
+## Pipelines
+
+- **Este repo** (`.github/workflows/ci.yml`): en cada PR y push a `main` valida los roles y las skills, corre las pruebas en Node 18, 20 y 22, verifica que `dist/` esté al día y prueba la plantilla de CI de punta a punta.
+- **Proyectos que usan los agentes:** `node scripts/instalar.js <proyecto> --hosts ci` copia `templates/openspec.yml` a `.github/workflows/openspec.yml`. En cada PR valida los changes con `openspec validate --all --strict`. No se instala por defecto.
+
 ## Requisitos de OpenSpec
 
 Los roles usan la CLI `openspec`: `instructions apply --json`, `show --deltas-only` y `validate --strict`. Comprobados contra la 1.16.0; en otras versiones, verificar antes de usar.

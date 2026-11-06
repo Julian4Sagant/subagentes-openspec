@@ -3,15 +3,20 @@
 // Copia los adaptadores de dist/ a un proyecto. Es idempotente: vuelve a correrlo para actualizar.
 // AGENTS.md no se pisa: el bloque de este repo va entre marcadores y se reemplaza solo ese bloque.
 //
-//   node scripts/instalar.js <proyecto> [--hosts claude,opencode,gemini,agents,prompts]
+//   node scripts/instalar.js <proyecto> [--hosts claude,opencode,gemini,agents,prompts,ci]
 //
-// Por defecto instala todos los hosts. Cada host usa su propia carpeta; ver docs/02-hosts.md.
+// Por defecto instala los hosts de agentes, no la plantilla de CI: un workflow nuevo en un
+// proyecto hay que pedirlo explícitamente con --hosts ci. Cada host usa su propia carpeta;
+// ver docs/02-hosts.md.
 
 const fs = require('fs');
 const path = require('path');
 
 const RAIZ = path.resolve(__dirname, '..');
 const DIST = path.join(RAIZ, 'dist');
+const PLANTILLA_CI = path.join(RAIZ, 'templates', 'openspec.yml');
+const DESTINO_CI = '.github/workflows/openspec.yml';
+const HOSTS_POR_DEFECTO = ['claude', 'opencode', 'gemini', 'agents', 'prompts'];
 const INICIO = '<!-- subagentes-openspec:inicio -->';
 const FIN = '<!-- subagentes-openspec:fin -->';
 
@@ -59,6 +64,13 @@ function instalar(proyecto, hosts) {
 			resumen.push(`AGENTS.md (bloque): ${escribirBloque(proyecto)}`);
 			continue;
 		}
+		if (host === 'ci') {
+			const destino = path.join(proyecto, DESTINO_CI);
+			fs.mkdirSync(path.dirname(destino), { recursive: true });
+			fs.copyFileSync(PLANTILLA_CI, destino);
+			resumen.push(`ci: ${DESTINO_CI}`);
+			continue;
+		}
 		const d = DESTINOS[host];
 		if (!d) {
 			throw new Error(`Host desconocido: ${host}`);
@@ -73,10 +85,9 @@ if (require.main === module) {
 	const args = process.argv.slice(2);
 	const proyecto = args.find(a => !a.startsWith('--'));
 	const idx = args.indexOf('--hosts');
-	const todos = [...Object.keys(DESTINOS), 'agents'];
-	const hosts = idx === -1 ? todos : args[idx + 1].split(',').map(h => h.trim()).filter(Boolean);
+	const hosts = idx === -1 ? HOSTS_POR_DEFECTO : args[idx + 1].split(',').map(h => h.trim()).filter(Boolean);
 	if (!proyecto) {
-		console.error('Uso: node scripts/instalar.js <proyecto> [--hosts claude,opencode,gemini,agents,prompts]');
+		console.error('Uso: node scripts/instalar.js <proyecto> [--hosts claude,opencode,gemini,agents,prompts,ci]');
 		process.exitCode = 2;
 	} else {
 		try {
@@ -90,4 +101,4 @@ if (require.main === module) {
 	}
 }
 
-module.exports = { instalar, escribirBloque, INICIO, FIN };
+module.exports = { instalar, escribirBloque, INICIO, FIN, DESTINO_CI, PLANTILLA_CI };

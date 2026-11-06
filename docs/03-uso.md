@@ -33,6 +33,14 @@ El orquestador es la sesión principal del host, no un rol. Sigue la skill `orqu
 - `RESULTADO: TESTS_ESCRITOS` con `SUPUESTOS`: revisá cada supuesto antes de integrar. Si contradice el design, va a una actualización de la spec.
 - `VEREDICTO` del revisor: la última línea es la que se parsea. El resto es para la persona.
 
+## Pipeline de validación en un proyecto
+
+```bash
+node scripts/instalar.js /ruta/al/proyecto --hosts ci
+```
+
+Agrega `.github/workflows/openspec.yml`. En cada pull request instala OpenSpec en la versión fijada en la plantilla, valida todos los changes y falla si alguno no pasa. Para agregar las pruebas del proyecto, editá el archivo y añadí el paso correspondiente al final. Subí una versión nueva de OpenSpec solo después de probarla: cambiá la versión fijada en la plantilla y volvé a instalar.
+
 ## Validar el repo de agentes
 
 ```bash

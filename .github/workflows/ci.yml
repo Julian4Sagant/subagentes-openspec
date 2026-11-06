@@ -3,10 +3,31 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, rewrite/agnostico]
+    branches: [main]
 
 jobs:
   agentes:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Validar la fuente canónica
+        run: node scripts/validar-agentes.js
+
+      - name: Probar scripts
+        run: node --test scripts/test/*.test.js
+
+      - name: Verificar que dist/ está al día con agents/ y skills/
+        run: node scripts/generar-adaptadores.js --check
+
+  plantilla:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,11 +36,39 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validar la fuente canónica
-        run: node scripts/validar-agentes.js
+      - name: Instalar OpenSpec (versión fijada, igual que la plantilla)
+        run: npm install -g @fission-ai/openspec@1.16.0
 
-      - name: Probar scripts
-        run: node --test scripts/test/*.test.js
+      - name: Preparar un proyecto de prueba con un change bueno y otro roto
+        run: |
+          set -euo pipefail
+          P="$RUNNER_TEMP/proyecto"
+          mkdir -p "$P" && cd "$P"
+          git init -q && git config user.email ci@example.com && git config user.name ci
+          echo "# proyecto" > README.md
+          openspec init --tools none . >/dev/null
+          mkdir -p openspec/changes/bien/specs/demo openspec/changes/roto
+          printf '## Why\n\nPorque sí.\n\n## What Changes\n\n- algo\n' > openspec/changes/bien/proposal.md
+          printf '## ADDED Requirements\n\n### Requirement: Demo\nEl sistema SHALL responder.\n\n#### Scenario: Responde\n- **WHEN** se consulta\n- **THEN** responde\n' > openspec/changes/bien/specs/demo/spec.md
+          printf '## 1. Tareas\n\n- [ ] 1.1 Hacer algo\n' > openspec/changes/bien/tasks.md
+          printf '# roto\n' > openspec/changes/roto/proposal.md
+          echo "$P" > "$RUNNER_TEMP/proyecto.txt"
 
-      - name: Verificar que dist/ está al día con agents/
-        run: node scripts/generar-adaptadores.js --check
+      - name: Instalar la plantilla con el instalador del repo
+        run: node scripts/instalar.js "$(cat "$RUNNER_TEMP/proyecto.txt")" --hosts ci
+
+      - name: La plantilla quedó en su lugar
+        run: test -f "$(cat "$RUNNER_TEMP/proyecto.txt")/.github/workflows/openspec.yml"
+
+      - name: El change bueno pasa la validación
+        run: |
+          cd "$(cat "$RUNNER_TEMP/proyecto.txt")"
+          openspec validate bien --strict
+
+      - name: Validar detecta el change roto (debe fallar)
+        run: |
+          cd "$(cat "$RUNNER_TEMP/proyecto.txt")"
+          if openspec validate --all --strict; then
+            echo "ERROR: la validación aceptó un change roto" >&2
+            exit 1
+          fi

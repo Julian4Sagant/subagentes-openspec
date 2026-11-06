@@ -83,3 +83,14 @@ test('capacidad se traduce a modelo solo donde hay mapeo', () => {
 	assert.strictEqual(modeloPara('opencode', 'alta'), null);
 });
 
+
+test('la plantilla de CI se instala con --hosts ci y fija la versión de OpenSpec', () => {
+	const { DESTINO_CI, PLANTILLA_CI } = require('../instalar');
+	const proyecto = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-'));
+	instalar(proyecto, ['ci']);
+	const instalada = fs.readFileSync(path.join(proyecto, DESTINO_CI), 'utf8');
+	assert.strictEqual(instalada, fs.readFileSync(PLANTILLA_CI, 'utf8'));
+	assert.match(instalada, /@fission-ai\/openspec@\d+\.\d+\.\d+/);
+	assert.doesNotMatch(instalada, /@latest/);
+	assert.match(instalada, /openspec validate --all --strict/);
+});
