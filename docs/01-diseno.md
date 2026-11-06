@@ -15,21 +15,28 @@ Si el mismo agente escribe el código y sus tests, tiende a ajustar los tests ha
 
 ## Roles
 
-| Rol | Acceso | Qué hace | Cuándo |
-|---|---|---|---|
-| `implementador` | escritura | Implementa sus tareas dentro de un alcance declarado | Siempre, uno por área que no se pisa |
-| `tester` | escritura en tests | Escribe un test por Scenario desde la spec, sin leer `src/main` | Siempre, en paralelo con los implementadores |
-| `revisor` | lectura | Contrasta el código integrado con la spec y da un veredicto | Después de integrar un grupo |
-| `security-auditor` | lectura | Revisa autenticación, permisos, errores, logs y secretos | Solo si el cambio toca esas áreas |
+| Rol | Acceso | Capacidad | Qué hace | Cuándo |
+|---|---|---|---|---|
+| `implementador` | escritura | media | Implementa sus tareas dentro de un alcance declarado | Siempre, uno por área que no se pisa |
+| `tester` | escritura en tests | media | Escribe un test por Scenario desde la spec, sin leer `src/main` | Siempre, en paralelo con los implementadores |
+| `revisor` | lectura | alta | Contrasta el código integrado con la spec y da un veredicto | Después de integrar un grupo |
+| `security-auditor` | lectura | alta | Revisa autenticación, permisos, errores, logs y secretos | Solo si el cambio toca esas áreas |
+
+## Skills
+
+Cada rol declara las skills que necesita. Una skill es un procedimiento con su criterio de uso, por ejemplo cómo diagnosticar un fallo o cómo reportar un estado. El generador incluye el contenido de cada skill dentro del archivo del rol, así que el rol no depende de que el host sepa cargar skills.
+
+La capacidad no es un modelo. Un rol de capacidad `alta` pide el modelo más capaz que el host ofrezca, y el mapa de `config/capacidad.json` decide cuál es. Los hosts sin mapa usan su modelo por defecto.
 
 ## Qué se tomó de otros repos
 
-Se revisaron dos repos antes de empezar. De ninguno se copió código ni prompts.
+Detalle por skill y licencias en [Fuentes](04-fuentes.md).
 
 - **De `cloudflare/security-audit-skill`:** separar modo guía de modo completo; el padre es el único que escribe el estado compartido; un verificador en contexto fresco intenta refutar; validadores sin dependencias para la salida; roles abstractos en lugar de nombres de modelo.
 - **De `ayush488-glitch/genesis-kit`:** guías por fase cortas y neutrales al host; compuertas humanas entre spec, plan e implementación; cierre que exige evidencia, no el reporte del agente; una capa fina por host sobre un contenido canónico; y el criterio de que los agentes innecesarios son defectos.
+- **De `obra/superpowers`, `mattpocock/skills` e `intent-driven-template`:** los procedimientos de las skills, reescritos en español. Estados de reporte, TDD en cortes verticales, diagnóstico por lazo de retroalimentación, evidencia antes de afirmar, revisión en dos pasos, compuertas de git de OpenSpec y entrevista previa a la propuesta.
 
-Ideas que se dejaron afuera: su CLI, dashboard, servidor MCP, grafo de código (solo indexa JS, TS y Python), autonomía y promoción de reglas. Es una plataforma completa, y para el ciclo de OpenSpec basta con los formatos y los verificadores.
+Ideas que se dejaron afuera: su CLI, dashboard, servidor MCP, grafo de código (solo indexa JS, TS y Python), autonomía y promoción de reglas. Es una plataforma completa, y para el ciclo de OpenSpec basta con los formatos, las skills y los verificadores.
 
 ## Qué se quitó del repo anterior
 

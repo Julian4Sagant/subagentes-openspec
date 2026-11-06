@@ -4,14 +4,16 @@ Cuatro roles de subagente para el ciclo apply/verify de un change de [OpenSpec](
 
 La idea central: **los tests verifican el contrato, no la implementación.** Un agente escribe el código, otro escribe los tests desde la spec sin leer el código, otro revisa lo integrado y, si el cambio toca áreas sensibles, entra un auditor de seguridad. Así un test puede fallar de verdad cuando el código se aparta de la spec.
 
-| Rol | Acceso | Qué hace |
-|---|---|---|
-| `implementador` | escritura | Implementa sus tareas en un alcance declarado |
-| `tester` | escritura en tests | Escribe un test por Scenario, sin leer `src/main` |
-| `revisor` | lectura | Contrasta lo integrado con la spec y da un veredicto |
-| `security-auditor` | lectura | Revisa autenticación, permisos, logs y secretos |
+| Rol | Acceso | Capacidad | Skills | Qué hace |
+|---|---|---|---|---|
+| `implementador` | escritura | media | reportar-estado, tdd, diagnosticar-fallo, verificar-antes-de-afirmar, recibir-revision | Implementa sus tareas en un alcance declarado |
+| `tester` | escritura en tests | media | reportar-estado, tdd, verificar-antes-de-afirmar | Escribe un test por Scenario, sin leer `src/main` |
+| `revisor` | lectura | alta | revision-en-dos-pasos, verificar-antes-de-afirmar | Contrasta lo integrado con la spec y da un veredicto |
+| `security-auditor` | lectura | alta | verificar-antes-de-afirmar | Revisa autenticación, permisos, logs y secretos |
 
-Los roles no nombran modelo ni host. Quien usa el repo elige el modelo en su asistente.
+La **capacidad** (`baja`, `media`, `alta`) indica cuánto razonamiento necesita el rol. Cada host la traduce a su modelo; ver `config/capacidad.json`. Los roles no nombran modelo.
+
+Las **skills** son procedimientos reutilizables en `skills/`. Cada rol las declara y el generador las incluye en su archivo. Además, el orquestador (la sesión principal) usa `orquestar-change` y `entrevista-spec`.
 
 ## Hosts
 
@@ -38,10 +40,13 @@ Después, el flujo del change y cómo leer los reportes están en [docs/03-uso.m
 
 ```
 agents/     fuente única de los roles (markdown neutro)
+skills/     procedimientos reutilizables que los roles declaran
+config/     mapa de capacidad a modelo, por host
 dist/       adaptadores generados: claude, opencode, gemini, prompts y AGENTS.md
 scripts/    generar y validar, instalar, verificar escritura por git, preparar worktree del tester
 scripts/test/  pruebas (node --test, sin dependencias)
-docs/       diseño, hosts y uso
+licenses/   avisos MIT de los repos de los que se tomaron ideas
+docs/       diseño, hosts, uso y fuentes
 .github/    CI: valida, prueba y verifica que dist/ esté al día
 ```
 

@@ -1,6 +1,8 @@
 # Hosts
 
-Cómo entra cada rol en cada asistente. La fuente es siempre `agents/`; `dist/` se genera y CI verifica que esté al día.
+Cómo entra cada rol en cada asistente. La fuente es siempre `agents/` y `skills/`; `dist/` se genera y CI verifica que esté al día.
+
+La columna de modelo no aparece porque cada rol tiene una **capacidad** (`baja`, `media`, `alta`), no un modelo. `config/capacidad.json` decide qué modelo corresponde en cada host. Hoy solo Claude Code tiene mapa (`haiku`, `sonnet`, `opus`); en los demás, el rol usa el modelo por defecto del host hasta que completes el mapa.
 
 Lo que aparece como **verificado** salió de la documentación oficial o de una prueba local. Lo que dice **sin verificar** no debe darse por bueno hasta probarlo en la versión instalada.
 

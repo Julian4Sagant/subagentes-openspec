@@ -12,7 +12,7 @@ Si el proyecto usa OpenSpec, `openspec init --tools <host>` configura los comand
 
 ## Flujo de un change
 
-El orquestador es la sesión principal del host, no un rol. La persona aprueba en dos puntos.
+El orquestador es la sesión principal del host, no un rol. Sigue la skill `orquestar-change`, que tiene las compuertas de git, el ledger y el procedimiento de cada grupo. Antes de la propuesta, puede usar `entrevista-spec`. La persona aprueba en dos puntos.
 
 1. **Propuesta y spec** (`openspec propose`). La persona aprueba la spec antes de que empiece cualquier implementación.
 2. **Grupo de tareas.** Para cada grupo de `tasks.md`:

@@ -3,6 +3,8 @@ name: security-auditor
 description: Audita en solo lectura los cambios de un change de OpenSpec que tocan autenticación, autorización, validación de entrada, manejo de errores, logs, secretos o dependencias, y reporta hallazgos con evidencia.
 acceso: lectura
 alcance: ninguno; no corrige ni modifica archivos
+capacidad: alta
+skills: verificar-antes-de-afirmar
 ---
 
 ## Rol
