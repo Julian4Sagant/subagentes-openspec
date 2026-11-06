@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, rewrite/agnostico]
+
+jobs:
+  agentes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validar la fuente canónica
+        run: node scripts/validar-agentes.js
+
+      - name: Probar scripts
+        run: node --test scripts/test/*.test.js
+
+      - name: Verificar que dist/ está al día con agents/
+        run: node scripts/generar-adaptadores.js --check
