@@ -58,6 +58,10 @@ Supone que los worktrees de cada área ya existen y que la corrección corre sob
 
 Ejemplos de los archivos que el proyecto necesita están en [`docs/ejemplos/`](ejemplos/): un `CLAUDE.md`, un `openspec/config.yaml` y un `docs/flujo-de-trabajo.md`.
 
+### Revisión en CI
+
+Para correr el revisor y el security-auditor en cada PR del proyecto con GitHub Actions, ver [Revisión en CI](09-revision-en-ci.md).
+
 ### Requisitos de archivos del proyecto
 
 Los agentes leen archivos que el repo no trae. Tienen que existir en el proyecto:

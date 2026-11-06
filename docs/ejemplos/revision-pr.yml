@@ -1,0 +1,32 @@
+# Ejemplo: .github/workflows/revision-pr.yml en el proyecto.
+# Llama a la revisión con agentes de subagentes-openspec en cada PR que no sea borrador.
+# Guía completa en docs/09-revision-en-ci.md del repo de agentes.
+
+name: Revisión con agentes
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Si llega un push nuevo al PR, cancela la revisión anterior para no gastar tokens dos veces.
+concurrency:
+  group: revision-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  revision:
+    if: ${{ !github.event.pull_request.draft }}
+    # Fijá la misma versión en el uses y en ref-agentes.
+    uses: Julian4Sagant/subagentes-openspec/.github/workflows/revision.yml@main
+    with:
+      ref-agentes: main
+      comando-test: ./mvnw -B test
+      java-version: '21'
+      seguridad: auto
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # Solo si el repo de agentes es privado: un token con lectura de ese repo.
+      # TOKEN_AGENTES: ${{ secrets.TOKEN_AGENTES }}

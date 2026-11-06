@@ -24,5 +24,8 @@ jobs:
       - name: Probar el verificador de contrato de proyecto
         run: node --test scripts/test-verificar-proyecto.js
 
+      - name: Probar los scripts de la revisión en CI
+        run: node --test scripts/test-revision-ci.js
+
       - name: Revisar los workflows
         run: node scripts/validar-workflows.js

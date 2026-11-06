@@ -32,6 +32,7 @@ Requisitos, verificación y variantes por proyecto en [Instalación](docs/03-ins
 - [Uso](docs/05-uso.md)
 - [Casos de uso](docs/06-casos-de-uso.md)
 - [Patrones](docs/07-patrones.md): el contrato de cada proyecto y las reglas que todos los agentes asumen
+- [Revisión en CI](docs/09-revision-en-ci.md): el revisor y el security-auditor en GitHub Actions, en cada PR del proyecto
 
 ## Contenido del repo
 
@@ -40,9 +41,9 @@ agents/     los cinco agentes (fuente de verdad)
 hooks/      hook del tester que bloquea src/main, y guarda de escritura para git y el proyecto
 workflows/  el grafo del apply como script de la herramienta Workflow
 skills/     skills que precargan los agentes, como el checklist OWASP del security-auditor
-scripts/    instalador, verificador de @DisplayName, verificador de contrato de proyecto, validadores de agentes y workflows, y pruebas
+scripts/    instalador, verificador de @DisplayName, verificador de contrato de proyecto, validadores de agentes y workflows, scripts de la revisión en CI, y pruebas
 docs/       documentación, y ejemplos de los archivos del proyecto en docs/ejemplos/
-.github/    CI: valida los agentes, prueba los hooks y revisa la sintaxis del workflow
+.github/    CI de este repo, y revision.yml: la revisión con agentes que los proyectos llaman desde sus PRs
 ```
 
 Ninguno de los archivos contiene claves, tokens ni datos reales.

@@ -18,3 +18,4 @@
 6. [Casos de uso](06-casos-de-uso.md): siete situaciones reales y qué agentes lanzar en cada una.
 7. [Patrones](07-patrones.md): el contrato que cada proyecto cumple, roles y permisos, formatos fijos y cómo agregar un agente.
 8. [Skills de terceros](08-skills-terceros.md): las skills de mattpocock/skills incluidas, qué cambió en cada una y cuáles quedaron afuera.
+9. [Revisión en CI](09-revision-en-ci.md): el revisor y el security-auditor en GitHub Actions, en cada PR del proyecto.

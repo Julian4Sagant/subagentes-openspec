@@ -49,7 +49,7 @@ VEREDICTO: CAMBIOS REQUERIDOS
 1. [código|tests|artefactos] archivo:línea — qué cambiar
 ```
 
-El orquestador lee esa última línea para decidir si vuelve al agente de cada área (máximo 3 vueltas). Por eso un formato que cambia de una versión a otra rompe el flujo: si cambiás un reporte, cambiá también al que lo lee.
+El orquestador lee esa última línea para decidir si vuelve al agente de cada área (máximo 3 vueltas). La [revisión en CI](09-revision-en-ci.md) la lee con `scripts/leer-veredicto.js` para decidir si el check pasa. Por eso un formato que cambia de una versión a otra rompe el flujo: si cambiás un reporte, cambiá también a los que lo leen (`workflows/apply-change.js` y `scripts/leer-veredicto.js`).
 
 ## 5. Cómo agregar o cambiar un agente
 
@@ -67,6 +67,7 @@ El orquestador lee esa última línea para decidir si vuelve al agente de cada �
 | `node scripts/validar-agentes.js` | Frontmatter, guardas, modelos y rutas de hooks y skills. |
 | `node --test scripts/test-hooks.js` | Que los hooks bloquean lo que tienen que bloquear. |
 | `node --test scripts/test-verificar-proyecto.js` | Que el contrato de proyecto detecta lo que falta o se desvió. |
+| `node --test scripts/test-revision-ci.js` | Que la revisión en CI elige bien el change y los agentes, y lee bien los veredictos. |
 | `node scripts/validar-workflows.js` | Que el workflow del apply parsea y declara su `meta`. |
 | `node scripts/verificar-proyecto.js <ruta>` | Que un proyecto concreto cumple el contrato (paso 2). |
 

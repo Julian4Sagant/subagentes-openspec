@@ -1,0 +1,271 @@
+# Revisión de un PR con los agentes de este repo, como workflow reutilizable de GitHub Actions.
+# Cada proyecto lo llama desde su propio workflow: ejemplo en docs/ejemplos/revision-pr.yml y guía en
+# docs/09-revision-en-ci.md.
+#
+#   contrato   el proyecto cumple el contrato de los agentes (scripts/verificar-proyecto.js)
+#   tests      los tests del proyecto, sin Claude
+#   analizar   qué change revisar y si hace falta el security-auditor (scripts/analizar-pr.js)
+#   agentes    revisor y, si corresponde, security-auditor; falla si el veredicto no pasa
+#              (scripts/leer-veredicto.js)
+#
+# Solo el job agentes usa Claude Code, y gasta tokens. No corre en PRs desde forks: GitHub no les pasa
+# secretos y su texto no es de confianza.
+
+name: Revisión con agentes
+
+on:
+  workflow_call:
+    inputs:
+      change:
+        description: Nombre del change de OpenSpec. Vacío = se detecta por los archivos que el PR toca en openspec/changes/.
+        type: string
+        default: ''
+      comando-test:
+        description: Comando de los tests del proyecto. Vacío = no corre el job tests.
+        type: string
+        default: ./mvnw -B test
+      java-version:
+        description: Versión de Java que instala setup-java. Vacío = no instala Java.
+        type: string
+        default: '21'
+      seguridad:
+        description: Cuándo corre el security-auditor. auto (según las rutas que toca el PR), siempre o nunca.
+        type: string
+        default: auto
+      patron-seguridad:
+        description: Expresión regular, sin distinguir mayúsculas, sobre las rutas del PR que activa el security-auditor en modo auto. Vacío = la de scripts/analizar-pr.js.
+        type: string
+        default: ''
+      rama-base:
+        description: Rama contra la que se compara el PR. Vacío = la base del pull_request.
+        type: string
+        default: ''
+      ref-agentes:
+        description: Rama o tag de este repo contra el que se verifica el contrato. Usá el mismo que en el uses.
+        type: string
+        default: main
+      verificar-contrato:
+        description: Corre el job contrato.
+        type: boolean
+        default: true
+      version-claude:
+        description: Versión de @anthropic-ai/claude-code.
+        type: string
+        default: latest
+      version-openspec:
+        description: Versión de @fission-ai/openspec.
+        type: string
+        default: latest
+      herramientas-extra:
+        description: Reglas de permiso extra para los agentes, separadas por coma. Ejemplo "Bash(./gradlew:*)".
+        type: string
+        default: ''
+    secrets:
+      ANTHROPIC_API_KEY:
+        description: Clave de la API de Anthropic para Claude Code.
+        required: true
+      TOKEN_AGENTES:
+        description: Token con lectura de este repo. Solo hace falta si es privado.
+        required: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: proyecto
+
+env:
+  REPO_AGENTES: Julian4Sagant/subagentes-openspec
+
+jobs:
+  contrato:
+    if: inputs.verificar-contrato
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: proyecto
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.REPO_AGENTES }}
+          ref: ${{ inputs.ref-agentes }}
+          token: ${{ secrets.TOKEN_AGENTES || github.token }}
+          path: subagentes
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verificar el contrato del proyecto
+        run: node "$GITHUB_WORKSPACE/subagentes/scripts/verificar-proyecto.js" .
+
+  tests:
+    if: inputs.comando-test != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: proyecto
+          persist-credentials: false
+      - if: inputs.java-version != ''
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java-version }}
+      - name: Tests del proyecto
+        run: ${{ inputs.comando-test }}
+
+  analizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      base: ${{ steps.analizar.outputs.base }}
+      change: ${{ steps.analizar.outputs.change }}
+      agentes: ${{ steps.analizar.outputs.agentes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: proyecto
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.REPO_AGENTES }}
+          ref: ${{ inputs.ref-agentes }}
+          token: ${{ secrets.TOKEN_AGENTES || github.token }}
+          path: subagentes
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: analizar
+        name: Decidir qué change revisar y con qué agentes
+        env:
+          RAMA_BASE: ${{ inputs.rama-base }}
+          CHANGE: ${{ inputs.change }}
+          SEGURIDAD: ${{ inputs.seguridad }}
+          PATRON: ${{ inputs.patron-seguridad }}
+        run: |
+          base="${RAMA_BASE:-$GITHUB_BASE_REF}"
+          if [ -z "$base" ]; then
+            echo "::error::No hay rama base: corré este workflow en un pull_request o pasá el input rama-base."
+            exit 1
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          git diff --name-only "origin/$base...HEAD" \
+            | node "$GITHUB_WORKSPACE/subagentes/scripts/analizar-pr.js" --change "$CHANGE" --seguridad "$SEGURIDAD" --patron "$PATRON" \
+            | tee -a "$GITHUB_OUTPUT"
+
+  agentes:
+    needs: [contrato, tests, analizar]
+    # Corre aunque contrato o tests se hayan saltado por sus inputs, pero no si fallaron. No corre en forks.
+    if: >-
+      always()
+      && needs.analizar.result == 'success'
+      && needs.analizar.outputs.agentes != '[]'
+      && contains(fromJSON('["success","skipped"]'), needs.contrato.result)
+      && contains(fromJSON('["success","skipped"]'), needs.tests.result)
+      && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.analizar.outputs.agentes || '[]') }}
+    name: agentes (${{ matrix.agente }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: proyecto
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.REPO_AGENTES }}
+          ref: ${{ inputs.ref-agentes }}
+          token: ${{ secrets.TOKEN_AGENTES || github.token }}
+          path: subagentes
+          persist-credentials: false
+      - if: inputs.java-version != ''
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java-version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar Claude Code y OpenSpec
+        env:
+          VERSION_CLAUDE: ${{ inputs.version-claude }}
+          VERSION_OPENSPEC: ${{ inputs.version-openspec }}
+        run: npm install -g "@anthropic-ai/claude-code@$VERSION_CLAUDE" "@fission-ai/openspec@$VERSION_OPENSPEC"
+
+      - name: Correr ${{ matrix.agente }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AGENTE: ${{ matrix.agente }}
+          CHANGE: ${{ needs.analizar.outputs.change }}
+          BASE: ${{ needs.analizar.outputs.base }}
+          COMANDO_TEST: ${{ inputs.comando-test }}
+          HERRAMIENTAS_EXTRA: ${{ inputs.herramientas-extra }}
+        run: |
+          if [ "$AGENTE" = revisor ]; then
+            cierre='su línea VEREDICTO'
+          else
+            cierre='sus líneas VEREDICTO y CRITICAL/WARNING'
+          fi
+          if [ -n "$COMANDO_TEST" ]; then
+            tests="Los tests del proyecto ya corrieron en este pipeline con \`$COMANDO_TEST\` y pasaron: no hace falta volver a correrlos completos."
+          else
+            tests="Los tests del proyecto no corrieron en este pipeline."
+          fi
+
+          prompt="Usá el agente $AGENTE (herramienta Agent) para el change \"$CHANGE\" de OpenSpec, sobre este checkout.
+
+          Pasale este contexto de CI, que reemplaza lo que sus instrucciones dicen sobre código sin commitear:
+          - El código del change ya está commiteado en la rama del PR. El cambio a revisar es \`git diff origin/$BASE...HEAD\`, no \`git status\` ni \`git diff\` solos.
+          - $tests
+          - Los archivos temporales van en $RUNNER_TEMP, fuera del repo.
+
+          No revises nada por tu cuenta: delegá en el agente y respondé solo con su reporte completo, textual, terminando con $cierre."
+
+          # Lo que el revisor y el security-auditor necesitan leer y correr. Todo lo demás se deniega,
+          # porque en modo -p no hay a quién preguntarle.
+          herramientas=(
+            Agent Read Grep Glob
+            "Bash(git diff:*)" "Bash(git log:*)" "Bash(git show:*)" "Bash(git status:*)"
+            "Bash(openspec:*)" "Bash(node .claude/scripts/verificar-displaynames.js:*)" "Bash(./mvnw:*)"
+            "Bash(cat:*)" "Bash(printf:*)" "Bash(echo:*)" "Bash(ls:*)" "Bash(grep:*)"
+          )
+          IFS=',' read -ra extra <<< "$HERRAMIENTAS_EXTRA"
+          for h in "${extra[@]}"; do
+            h="$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' <<< "$h")"
+            [ -n "$h" ] && herramientas+=("$h")
+          done
+
+          claude -p "$prompt" --allowedTools "${herramientas[@]}" | tee "$RUNNER_TEMP/$AGENTE.md"
+
+      - name: Publicar el reporte
+        if: always()
+        env:
+          AGENTE: ${{ matrix.agente }}
+        run: |
+          if [ -f "$RUNNER_TEMP/$AGENTE.md" ]; then
+            { echo "## $AGENTE"; echo; cat "$RUNNER_TEMP/$AGENTE.md"; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-${{ matrix.agente }}
+          path: ${{ runner.temp }}/${{ matrix.agente }}.md
+          if-no-files-found: ignore
+
+      - name: Leer el veredicto
+        env:
+          AGENTE: ${{ matrix.agente }}
+          MODO: ${{ matrix.modo }}
+        run: node "$GITHUB_WORKSPACE/subagentes/scripts/leer-veredicto.js" "$MODO" "$RUNNER_TEMP/$AGENTE.md"
